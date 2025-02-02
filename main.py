@@ -43,12 +43,18 @@ class Car:
         self.plate = plate
         self.parking_time = 0
         self.paid = False
+        self.price = 0
         self.entry_time = datetime.datetime.now()
 
     def pay(self, time):
-        self.parking_time = (time - self.entry_time).total_seconds() / 3600
-        self.paid = True
-        print(f"Car with plate {self.plate} paid for {self.parking_time:.2f} hours.")
+        self.parking_time = (time - self.entry_time).total_seconds()/60
+        if self.parking_time < 30:
+            self.paid = True
+            print(f"Car with plate {self.plate} did not have to pay for {self.parking_time:.2f} minutes.")
+        else:
+            self.price = self.parking_time / 10
+            print(f"Car with plate {self.plate} paid {self.price} for parking {self.parking_time:.2f} minutes")
+            self.paid = True
 
 
 # Code for simulation purposes
@@ -69,6 +75,7 @@ for i in range(0, random.randint(a=1, b=540)):
         try:
             car_to_remove = random.choice(my_parking_garage.cars)
             car_to_remove.pay(datetime.datetime.now())
+            time.sleep(random.randint(1, 10))
             my_parking_garage.exit(plate=car_to_remove.plate)
         # Handle the case if an exit operation is before any enter operation.
         except IndexError:
