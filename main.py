@@ -7,6 +7,7 @@ class ParkingGarage:
     def __init__(self, capacity: int):
         self.capacity = capacity
         self.cars = []
+        self.profit = 0
         self.free = capacity
         self.entry_allowed = True
 
@@ -43,18 +44,28 @@ class Car:
         self.plate = plate
         self.parking_time = 0
         self.paid = False
+        self.paid_at = ""
         self.price = 0
         self.entry_time = datetime.datetime.now()
 
     def pay(self, time):
         self.parking_time = (time - self.entry_time).total_seconds()/60
         if self.parking_time < 30:
-            self.paid = True
+            self.paid_at = datetime.datetime.now()
             print(f"Car with plate {self.plate} did not have to pay for {self.parking_time:.2f} minutes.")
         else:
             self.price = self.parking_time / 10
-            print(f"Car with plate {self.plate} paid {self.price} for parking {self.parking_time:.2f} minutes")
+            print(f"Car with plate {self.plate} paid {self.price} CHF for parking {self.parking_time:.2f} minutes")
             self.paid = True
+        return self.price
+
+    def exit(self, time):
+        if (datetime.datetime.now() - self.paid_at).total_seconds() / 60 < 10 and self.paid == True:
+            print(f"Car with plate {self.plate} is exiting within 10 minutes of payment.")
+        elif (datetime.datetime.now() - self.entry_time).total_seconds() / 60 < 30 and self.paid == False:
+            print(f"Car with plate {self.plate} is exiting within the 30 minute free parking time.")
+        else:
+            print(f"Car with plate {self.plate} is denied exit.")
 
 
 # Code for simulation purposes
@@ -74,8 +85,9 @@ for i in range(0, random.randint(a=1, b=540)):
     else:
         try:
             car_to_remove = random.choice(my_parking_garage.cars)
-            car_to_remove.pay(datetime.datetime.now())
+            my_parking_garage.profit += car_to_remove.pay(datetime.datetime.now())
             time.sleep(random.randint(1, 10))
+            car_to_remove.exit(datetime.datetime.now())
             my_parking_garage.exit(plate=car_to_remove.plate)
         # Handle the case if an exit operation is before any enter operation.
         except IndexError:
